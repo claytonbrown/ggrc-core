@@ -195,10 +195,11 @@ def _get_child_ids(parent_ids):
     list of ACL ids for all children from the given parents.
   """
   acl_table = all_models.AccessControlList.__table__
-
-  return sa.select([acl_table.c.id]).where(
+  select_q = sa.select([acl_table.c.id]).where(
       acl_table.c.parent_id.in_(parent_ids)
   )
+  result = db.session.execute(select_q).fetchall()
+  return [row.id for row in result]
 
 
 def _handle_propagation_parents(parent_acl_ids, user_id):
@@ -268,16 +269,15 @@ def _propagate(parent_acl_ids, user_id):
   # The following for statement is a replacement for `while True` statement
   # with a safety cutoff limit.
   for _ in range(PROPAGATION_DEPTH_LIMIT):
-
+    user_ids = []
     child_ids = _handle_acl_step(parent_acl_ids, user_id)
-    user_ids = acl_utils.get_user_ids(
-        all_models.AccessControlList.id.in_(child_ids))
+    for chunk_child_ids in utils.list_chunks(child_ids, chunk_size=50):
+      chunk_user_ids = acl_utils.get_user_ids(
+          all_models.AccessControlList.id.in_(chunk_child_ids))
+      user_ids.extend(chunk_user_ids)
     getattr(flask.g, "user_ids", set()).update(user_ids)
 
-    count_query = child_ids.alias("counts").count()
-    child_id_count = db.session.execute(count_query).scalar()
-
-    if child_id_count:
+    if child_ids:
       parent_acl_ids = child_ids
     else:
       # Exit the loop when there are no more ACL entries to propagate
