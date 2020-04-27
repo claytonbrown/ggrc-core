@@ -95,6 +95,9 @@ class TestPropagation(BaseTestPropagation):
     acl_id = program.acr_name_acl_map["Program Editors"].id
 
     child_ids = propagation._handle_acl_step([acl_id], self.user_id)
+    child_id_count = db.session.query(all_models.AccessControlList.id).filter(
+        all_models.AccessControlList.id.in_(child_ids)
+    ).count()
 
     self.assertEqual(
         all_models.AccessControlList.query.filter(
@@ -102,10 +105,7 @@ class TestPropagation(BaseTestPropagation):
         ).count(),
         count * 2
     )
-    self.assertEqual(
-        db.session.execute(child_ids.alias("counts").count()).scalar(),
-        count,
-    )
+    self.assertEqual(child_id_count, count)
 
   def test_multi_acl_to_multiple(self):
     """Test multiple ACL propagation to multiple children."""
@@ -240,10 +240,10 @@ class TestPropagation(BaseTestPropagation):
         ).count(),
         20
     )
-    self.assertEqual(
-        db.session.execute(child_ids.alias("counts").count()).scalar(),
-        10,
-    )
+    child_id_count = db.session.query(all_models.AccessControlList.id).filter(
+        all_models.AccessControlList.id.in_(child_ids)
+    ).count()
+    self.assertEqual(child_id_count, 10)
 
   def test_propagation_conflict(self):
     """Test propagation conflicts
