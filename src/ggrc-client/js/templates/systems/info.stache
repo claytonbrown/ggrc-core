@@ -41,17 +41,17 @@
                   <div class="row-fluid wrap-row">
                     <div class="span3">
                       <div class="action-toolbar-container">
-                        <div class="action-toolbar">                   
+                        <div class="action-toolbar">
                           <h6 class="action-toolbar__header">Code</h6>
                         </div>
                         {{slug}}
                       </div>
                     </div>
                     <div class="span3">
-                      <div class="action-toolbar-container">
-                        <div class="action-toolbar">
-                          <h6 class="action-toolbar__header">Network Zone</h6>
-                        </div>
+                      <external-attribute
+                        instance:from="instance"
+                        title:from="'Network Zone'"
+                      >
                         <object-loader path:from="instance.network_zone">
                           {{#if loadedObject}}
                             <p>{{loadedObject.title}}</p>
@@ -59,7 +59,7 @@
                             <span class="empty-message">None</span>
                           {{/if}}
                         </object-loader>
-                      </div>
+                      </external-attribute>
                     </div>
                     <div class="span3">
                       <external-attribute
