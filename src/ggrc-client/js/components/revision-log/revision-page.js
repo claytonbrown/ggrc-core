@@ -50,6 +50,11 @@ let LIST_FIELDS = {
   recipients: 1,
 };
 
+const EXTERNAL_FIELDS = {
+  network_zone: 1,
+  kind: 1,
+};
+
 export default canComponent.extend({
   tag: 'revision-page',
   view: canStache(template),
@@ -198,6 +203,14 @@ export default canComponent.extend({
               origVal = origVal.sort();
               origVal = loCompact(origVal);
               origVal = origVal.join(', ');
+            }
+          }
+          if (EXTERNAL_FIELDS[fieldName]) {
+            if (value) {
+              value = value.title ? value.title : value;
+            }
+            if (origVal) {
+              origVal = origVal.title ? origVal.title : origVal;
             }
           }
           if (origVal || value) {
