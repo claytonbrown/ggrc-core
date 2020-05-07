@@ -23,7 +23,6 @@
 .header-content {
   background: $white;
   z-index: zIndex(header-content);
-  padding-left: 30px;
 
   @media (max-width: 1200px) {
     .menu {
