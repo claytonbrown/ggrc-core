@@ -32,6 +32,7 @@ class Requirement(Roleable,
                   mixins.base.ContextRBAC,
                   mixins.BusinessObject,
                   mixins.Folderable,
+                  mixins.WithMigrationFlag,
                   Indexed,
                   db.Model):
   """Requirement model."""

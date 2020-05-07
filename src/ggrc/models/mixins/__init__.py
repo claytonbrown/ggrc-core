@@ -645,7 +645,34 @@ class BusinessObject(Stateful, Noted, Described, Titled, Slugged):
   }
 
 
-class ScopeObject(BusinessObject):
+class WithMigrationFlag(object):
+  """Mixin for models which support 'migrate' attribute"""
+
+  migrate = db.Column(db.Boolean, default=False)
+
+  _api_attrs = reflection.ApiAttributes(
+      reflection.Attribute("migrate", create=False, update=True),
+  )
+
+  _aliases = {
+      "migrate": {
+          "display_name": "Migrate",
+          "mandatory": False,
+          "ignore_on_update": True,
+          "view_only": True,
+          "description": "Allowed values are:\nyes\nno"
+      },
+  }
+
+  @classmethod
+  def indexed_query(cls):
+    return super(WithMigrationFlag, cls).indexed_query().options(
+        orm.Load(cls).load_only("migrate"),
+    )
+
+
+class ScopeObject(BusinessObject,
+                  WithMigrationFlag):
   """Mixin that re-name status attribute"""
 
   _fulltext_attrs = [
@@ -877,6 +904,7 @@ __all__ = [
     "Notifiable",
     "Slugged",
     "Stateful",
+    "WithMigrationFlag",
     "ScopeObject",
     "TestPlanned",
     "WithStartDate",
