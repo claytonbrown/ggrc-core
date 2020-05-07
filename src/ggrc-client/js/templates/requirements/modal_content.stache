@@ -17,6 +17,11 @@
       </label>
       <input tabindex="1" id="requirement-title" class="input-block-level" placeholder="Enter Title" name="title" type="text" value="{{title}}" autofocus>
     </div>
+
+    <migrate-checkbox
+      instance:from="instance"
+      isEditModal:from="'true'" />
+
     <div class="span6 hidable">
       {{#if_helpers '\n ^if' instance.id '\n and ^if' object_params.directive}}
         <label>

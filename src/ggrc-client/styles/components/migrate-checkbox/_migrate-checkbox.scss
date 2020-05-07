@@ -1,0 +1,38 @@
+/*
+ * Copyright (C) 2019 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+ */
+
+migrate-checkbox {
+  margin-right: 25px;
+  display: flex;
+  align-items: center;
+
+  .migrate-label {
+    margin: 0;
+    display: flex;
+    font-size: 16px !important;
+    color: $red !important;
+
+    &__edit-modal {
+      margin-top: 25px;
+      margin-left: 135px;
+    }
+  }
+
+  .migrate-checkbox {
+    width: 15px;
+    height: 15px;
+    margin: 0 5px 0 0 !important;
+    border: 2px solid $red !important;
+    background-color: transparent;
+    outline: none !important;
+    -webkit-appearance: none;
+    z-index: 1;
+  }
+
+  .fa-check {
+    font-size: 15px;
+    position: absolute;
+  }
+}

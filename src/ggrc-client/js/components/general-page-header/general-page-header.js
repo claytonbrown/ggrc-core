@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2019 Google Inc.
+    Copyright (C) 2020 Google Inc.
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 */
 
@@ -12,6 +12,7 @@ import {
   isChangeableExternally,
 } from '../../plugins/utils/ggrcq-utils';
 import {isSnapshot} from '../../plugins/utils/snapshot-utils';
+import './../migrate-checkbox/migrate-checkbox';
 
 const viewModel = canMap.extend({
   define: {
