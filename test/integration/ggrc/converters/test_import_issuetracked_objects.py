@@ -1256,9 +1256,6 @@ class TestEnabledViaImport(TestIssueTrackedImport):
     self.assertFalse(obj.issue_tracker["enabled"])
 
 
-@ddt.ddt
-@mock.patch("ggrc.integrations.issues.Client.create_issue")
-@mock.patch("ggrc.integrations.issues.Client.update_issue")
 class TestImportIssueTrackedNotif(ggrc.TestCase):
   """Test cases for notifications during import of IssueTracked objects."""
 
@@ -1270,12 +1267,13 @@ class TestImportIssueTrackedNotif(ggrc.TestCase):
     ).first()
     self.current_user_email = current_user.email
 
+  @mock.patch("ggrc.integrations.issues.Client.create_issue")
   @mock.patch.object(settings, "ISSUE_TRACKER_ENABLED", True)
-  def test_generate_it_issue_notif(self, *_):
+  def test_generate_it_issue_notif(self, create_issue_mock):
     """Test email is sent if issue in issuetracker is created during import."""
     with factories.single_commit():
       assessment = factories.AssessmentFactory()
-      factories.IssueTrackerIssueFactory(
+      issue = factories.IssueTrackerIssueFactory(
           issue_tracked_obj=assessment.audit,
           enabled=True,
       )
@@ -1287,6 +1285,7 @@ class TestImportIssueTrackedNotif(ggrc.TestCase):
             ("Ticket Tracker Integration", "On"),
         ]),
     ]
+    create_issue_mock.return_value = {"issueId": issue.issue_id}
 
     with mock.patch(
         "ggrc.notifications.common.send_email",
@@ -1304,8 +1303,9 @@ class TestImportIssueTrackedNotif(ggrc.TestCase):
         }),
     )
 
+  @mock.patch("ggrc.integrations.issues.Client.update_issue")
   @mock.patch.object(settings, "ISSUE_TRACKER_ENABLED", True)
-  def test_update_it_issue_notif(self, *_):
+  def test_update_it_issue_notif(self, update_issue_mock):
     """Test email is sent if issue in issuetracker is updated during import."""
     with factories.single_commit():
       assessment = factories.AssessmentFactory()
@@ -1313,7 +1313,7 @@ class TestImportIssueTrackedNotif(ggrc.TestCase):
           issue_tracked_obj=assessment.audit,
           enabled=True,
       )
-      factories.IssueTrackerIssueFactory(
+      issue = factories.IssueTrackerIssueFactory(
           issue_tracked_obj=assessment,
           enabled=True,
       )
@@ -1324,6 +1324,8 @@ class TestImportIssueTrackedNotif(ggrc.TestCase):
             ("Code*", assessment.slug),
         ]),
     ]
+
+    update_issue_mock.return_value = {"issueId": issue.issue_id}
 
     with mock.patch(
         "ggrc.notifications.common.send_email",
