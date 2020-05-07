@@ -841,6 +841,9 @@ class TestIssueTrackerIntegration(SnapshotterBaseTestCase):
           'issue_severity': 'S2',
           'title': 'Default Title'
       }
+
+      mock_create_issue.return_value = {"issueId": "issue_id"}
+
       self.api.put(asmt, {'issue_tracker': issue_params})
       mock_create_issue.assert_called_once()
       self.assertEqual(mock_create_issue.call_args[0][0]['status'],

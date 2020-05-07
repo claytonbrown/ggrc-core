@@ -12,7 +12,7 @@
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO,NO_AUTO_CREATE_USER' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
@@ -359,9 +359,9 @@ CREATE TABLE `attribute_templates` (
   `order` int(11) DEFAULT NULL,
   `mandatory` tinyint(1) DEFAULT NULL,
   `unique` tinyint(1) DEFAULT NULL,
-  `help_text` text NOT NULL,
-  `options` text NOT NULL,
-  `default_value` text NOT NULL,
+  `help_text` text NOT NULL DEFAULT '',
+  `options` text NOT NULL DEFAULT '',
+  `default_value` text NOT NULL DEFAULT '',
   `read_only` tinyint(1) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,

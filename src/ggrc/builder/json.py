@@ -1,9 +1,9 @@
-# Copyright (C) 2019 Google Inc.
+# Copyright (C) 2020 Google Inc.
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 
 """JSON resource state representation handler for GGRC models."""
 
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module,invalid-name
 # false positive for RelationshipProperty
 
 from datetime import datetime
@@ -115,7 +115,7 @@ class UpdateAttrHandler(object):
   # some attr handlers don't use every argument from the common interface
   # pylint: disable=unused-argument
   @classmethod
-  def do_update_attr(cls, obj, json_obj, attr):
+  def do_update_attr(cls, obj, json_obj, attr, is_update=False):
     """Perform the update to ``obj`` required to make the attribute attr
     equivalent in ``obj`` and ``json_obj``.
     """
@@ -150,7 +150,13 @@ class UpdateAttrHandler(object):
       # same name.
       attr_name = attr
       method = getattr(cls, class_attr.__class__.__name__)
-      value = method(obj, json_obj, attr_name, class_attr)
+      value = method(
+          obj,
+          json_obj,
+          attr_name,
+          class_attr,
+          is_update=is_update
+      )
     if (isinstance(value, (set, list)) and
         not update_raw and (
         not hasattr(class_attr, 'property') or not
@@ -197,27 +203,100 @@ class UpdateAttrHandler(object):
         coll_attr.remove(item)
 
   @classmethod
-  def InstrumentedAttribute(cls, obj, json_obj, attr_name, class_attr):
+  def InstrumentedAttribute(cls,
+                            obj,
+                            json_obj,
+                            attr_name,
+                            class_attr, **kwargs
+                            ):
     """Translate the JSON value for an ``InstrumentedAttribute``"""
     method = getattr(cls, class_attr.property.__class__.__name__)
-    return method(obj, json_obj, attr_name, class_attr)
+    return method(obj, json_obj, attr_name, class_attr, **kwargs)
 
   @classmethod
-  def ColumnProperty(cls, obj, json_obj, attr_name, class_attr):
+  def ColumnProperty(cls, obj, json_obj, attr_name, class_attr, **kwargs):
     """Translate the JSON value for a ``ColumnProperty``"""
     method = getattr(
         cls,
         class_attr.property.expression.type.__class__.__name__,
         cls.default_column_handler)
-    return method(obj, json_obj, attr_name, class_attr)
+    return method(obj, json_obj, attr_name, class_attr, **kwargs)
 
   @classmethod
-  def default_column_handler(cls, obj, json_obj, attr_name, class_attr):
+  def default_column_handler(cls,
+                             obj,
+                             json_obj,
+                             attr_name,
+                             class_attr,
+                             **kwargs
+                             ):
     """Translate the JSON value for a simple value column"""
     return json_obj.get(attr_name)
 
   @classmethod
-  def DateTime(cls, obj, json_obj, attr_name, class_attr):
+  def get_default_update_value(cls, obj, attr_name):
+    """Get default value from table for update"""
+    return getattr(obj, attr_name)
+
+  @classmethod
+  def get_default_create_value(cls, obj, attr_name):
+    """Get default value from table for create"""
+    is_exist = False
+    can_nullable = False
+
+    attr_info = getattr(obj.__class__, attr_name)
+    default_value = attr_info.property.columns[0].default
+    if default_value is None:
+      nullable = attr_info.property.columns[0].nullable
+
+      if nullable is not None:
+        can_nullable = nullable
+
+      return None, is_exist, can_nullable
+
+    is_exist = True
+    return default_value.arg, is_exist, can_nullable
+
+  @classmethod
+  def Boolean(cls, obj, json_obj, attr_name, class_attr, **kwargs):
+    """Translate the JSON value for a ``Boolean`` column."""
+    is_update = kwargs.get('is_update', False)
+    if attr_name not in json_obj:
+      if is_update:
+        return cls.get_default_update_value(obj, attr_name)
+
+      default_value, is_exist, can_nullable = cls.get_default_create_value(
+          obj,
+          attr_name
+      )
+
+      if is_exist:
+        return default_value
+      return None if can_nullable else False
+
+    return json_obj[attr_name]
+
+  @classmethod
+  def Text(cls, obj, json_obj, attr_name, class_attr, **kwargs):
+    """Translate the JSON value for a ``Text`` column."""
+    is_update = kwargs.get('is_update', False)
+    if attr_name not in json_obj:
+      if is_update:
+        return cls.get_default_update_value(obj, attr_name)
+
+      default_value, is_exist, can_nullable = cls.get_default_create_value(
+          obj,
+          attr_name
+      )
+
+      if is_exist:
+        return default_value
+      return None if can_nullable else ''
+
+    return json_obj[attr_name]
+
+  @classmethod
+  def DateTime(cls, obj, json_obj, attr_name, class_attr, **kwargs):
     """Translate the JSON value for a ``Datetime`` column."""
     value = json_obj.get(attr_name)
     if not value:
@@ -231,7 +310,7 @@ class UpdateAttrHandler(object):
       )
 
   @classmethod
-  def Date(cls, obj, json_obj, attr_name, class_attr):
+  def Date(cls, obj, json_obj, attr_name, class_attr, **kwargs):
     """Translate the JSON value for a ``Date`` column."""
     value = json_obj.get(attr_name)
     value = value.split('T')[0] if isinstance(value, basestring) else value
@@ -248,7 +327,7 @@ class UpdateAttrHandler(object):
         )
 
   @classmethod
-  def query_for(cls, rel_class, json_obj, attr_name, uselist):
+  def query_for(cls, rel_class, json_obj, attr_name, uselist, **kwargs):
     """Resolve the model object instance referred to by the JSON value."""
     if uselist:
       # The value is a collection of links, resolve the collection of objects
@@ -270,14 +349,20 @@ class UpdateAttrHandler(object):
       return None
 
   @classmethod
-  def RelationshipProperty(cls, obj, json_obj, attr_name, class_attr):
+  def RelationshipProperty(cls,
+                           obj,
+                           json_obj,
+                           attr_name,
+                           class_attr,
+                           **kwargs
+                           ):
     """Translate the JSON value for a ``RelationshipProperty``."""
     rel_class = class_attr.property.mapper.class_
     return cls.query_for(
         rel_class, json_obj, attr_name, class_attr.property.uselist)
 
   @classmethod
-  def AssociationProxy(cls, obj, json_obj, attr_name, class_attr):
+  def AssociationProxy(cls, obj, json_obj, attr_name, class_attr, **kwargs):
     """Translate the JSON value for an ``AssociationProxy``."""
     if getattr(class_attr, "publish_raw", False):
       return json_obj.get(attr_name, {})
@@ -285,7 +370,7 @@ class UpdateAttrHandler(object):
     return cls.query_for(rel_class, json_obj, attr_name, True)
 
   @classmethod
-  def property(cls, obj, json_obj, attr_name, class_attr):
+  def property(cls, obj, json_obj, attr_name, class_attr, **kwargs):
     """Translate the JSON value for an object method decorated as a
     ``property``.
     """
@@ -297,12 +382,12 @@ class UpdateAttrHandler(object):
     return None
 
   @classmethod
-  def simple_property(cls, obj, json_obj, attr_name, class_attr):
+  def simple_property(cls, obj, json_obj, attr_name, class_attr, **kwargs):
     """Translate the JSON value for an attr decorated with @simple_property."""
     return json_obj.get(attr_name)
 
   @classmethod
-  def callable_property(cls, obj, json_obj, attr_name, class_attr):
+  def callable_property(cls, obj, json_obj, attr_name, class_attr, **kwargs):
     """Translate the JSON value for attrs decorated by @colable_property."""
     return json_obj.get(attr_name)()
 
@@ -737,13 +822,13 @@ class Builder(AttributeInfo):
         attribute_whitelist)
 
   @classmethod
-  def do_update_attrs(cls, obj, json_obj, attrs):
+  def do_update_attrs(cls, obj, json_obj, attrs, is_update=False):
     """Translate every attribute in ``attrs`` from the JSON dictionary value
     to a value or model object instance for references set for the attribute
     in ``obj``.
     """
     for attr_name in attrs:
-      UpdateAttrHandler.do_update_attr(obj, json_obj, attr_name)
+      UpdateAttrHandler.do_update_attr(obj, json_obj, attr_name, is_update)
 
   def publish_contribution(self, obj, inclusions, inclusion_filter,
                            attribute_whitelist):
@@ -802,7 +887,7 @@ class Builder(AttributeInfo):
     if isinstance(obj, WithExtCustomAttrsSetter):
       self._handle_cav_for_readonly(json_obj, attrs, is_external)
 
-    self.do_update_attrs(obj, json_obj, attrs)
+    self.do_update_attrs(obj, json_obj, attrs, is_update=True)
 
   def create(self, obj, json_obj):
     """Update the state of the new model object ``obj`` to be equivalent to the

@@ -30,7 +30,7 @@ def load_data(conn):
         cte.updated_at AS cte_updated_at,
         cte.cycle_task_group_object_task_id AS cgot_id,
         IFNULL(GROUP_CONCAT(acl_acr.name SEPARATOR ','),'') AS assignee_type,
-        rel_union.id as old_rel_id
+        ANY_VALUE(rel_union.id) as old_rel_id
       FROM
         cycle_task_entries cte
       JOIN(

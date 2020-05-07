@@ -38,7 +38,7 @@ def load_data(conn):
           tgo.modified_by_id AS tgo_modified_by_id,
           tgo.updated_at AS tgo_updated_at,
           tgo.context_id AS tgo_context_id,
-          rel_union.id AS tgo_rel_id
+          ANY_VALUE(rel_union.id) AS tgo_rel_id
       FROM
           task_group_objects tgo
       JOIN(

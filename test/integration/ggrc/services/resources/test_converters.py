@@ -105,7 +105,7 @@ class TestImportExportExceptions(TestImportExportBase):
         job_type=job,
         created_at=datetime.now(),
         created_by=user,
-        status="Wrong Status",
+        status="Failed",
     )
     response = self.client.put(
         "/api/people/{}/{}/{}/stop".format(user.id, url, ie_job.id),

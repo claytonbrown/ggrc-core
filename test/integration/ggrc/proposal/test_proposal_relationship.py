@@ -93,7 +93,8 @@ class TestProposalRelationship(TestCase):
         {
             "proposal": {
                 "status": all_models.Proposal.STATES.APPLIED,
-                "apply_reason": "test"
+                "apply_reason": "test",
+                "decline_reason": ""
             }
         }
     )

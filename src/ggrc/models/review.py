@@ -95,6 +95,7 @@ class Reviewable(rest_handable.WithPutHandable,
         primaryjoin=join_function,
         backref=Review.REVIEWABLE_TMPL.format(cls.__name__),
         uselist=False,
+        cascade="all, delete-orphan",
     )
 
   @classmethod
