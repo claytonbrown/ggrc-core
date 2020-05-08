@@ -10,6 +10,7 @@ import template from './migrate-checkbox.stache';
 import {isAllowedFor} from '../../permission';
 import {notifierXHR, notifier} from '../../plugins/utils/notifiers-utils';
 import {isConnectionLost} from '../../plugins/utils/errors-utils';
+import {isSnapshot} from '../../plugins/utils/snapshot-utils';
 
 const MIGRATE_OBJECTS = ['Contract', 'DataAsset', 'Facility', 'Market',
   'Metric', 'Objective', 'OrgGroup', 'Policy', 'Process', 'Product',
@@ -24,14 +25,16 @@ export default canComponent.extend({
     define: {
       isMigrateObject: {
         get() {
-          const {type, snapshot} = this.instance;
-          return MIGRATE_OBJECTS.includes(type) && !snapshot;
+          const instance = this.instance;
+          return MIGRATE_OBJECTS.includes(instance.type)
+            && !isSnapshot(instance);
         },
       },
       disabled: {
         get() {
+          const readOnly = this.attr('instance.readonly');
           const canEdit = isAllowedFor('update', this.attr('instance'));
-          if (canEdit) {
+          if (!readOnly && canEdit) {
             return this.attr('isSaving');
           }
           return true;
