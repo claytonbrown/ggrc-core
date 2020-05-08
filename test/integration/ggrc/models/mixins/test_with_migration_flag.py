@@ -7,6 +7,7 @@ from integration.ggrc.generator import ObjectGenerator
 
 @ddt.ddt
 class TestWithMigrationFlag(TestCase):
+  """Tests mixin WithMigrationFlag."""
 
   def setUp(self):
     super(TestWithMigrationFlag, self).setUp()
@@ -36,6 +37,7 @@ class TestWithMigrationFlag(TestCase):
       all_models.Policy
   )
   def test_create_objects(self, model_class):
+    """Tests migration flag."""
     data = {"title": "Object Title"}
     response, obj = self.object_generator.generate_object(
         model_class,
