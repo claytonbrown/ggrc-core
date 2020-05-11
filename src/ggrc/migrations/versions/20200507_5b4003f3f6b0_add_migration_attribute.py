@@ -16,7 +16,7 @@ from alembic import op, context
 # revision identifiers, used by Alembic.
 
 revision = '5b4003f3f6b0'
-down_revision = 'e3577a2b4e03'
+down_revision = 'b8a0d301eb50'
 
 tables_list = [
     "access_groups",
