@@ -2,12 +2,13 @@
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 
 """Integration tests for the mixin WithMigrationFlag."""
+import collections
 
 import ddt
 
-from ggrc.models import all_models
+from ggrc.converters import errors
 from integration import ggrc
-from integration.ggrc import generator
+from integration.ggrc.models import factories
 
 
 @ddt.ddt
@@ -17,86 +18,111 @@ class TestWithMigrationFlag(ggrc.TestCase):
   def setUp(self):
     super(TestWithMigrationFlag, self).setUp()
     self.api = ggrc.Api()
-    self.object_generator = generator.ObjectGenerator()
-    self.objs = []
 
   @ddt.data(
-      all_models.AccessGroup,
-      all_models.AccountBalance,
-      all_models.DataAsset,
-      all_models.Facility,
-      all_models.KeyReport,
-      all_models.Market,
-      all_models.Metric,
-      all_models.OrgGroup,
-      all_models.Process,
-      all_models.Product,
-      all_models.ProductGroup,
-      all_models.Project,
-      all_models.Regulation,
-      all_models.Standard,
-      all_models.System,
-      all_models.TechnologyEnvironment,
-      all_models.Vendor,
-      all_models.Objective,
-      all_models.Requirement,
-      all_models.Threat,
-      all_models.Contract,
-      all_models.Policy
+      "Access Group",
+      "Account Balance",
+      "Data Asset",
+      "Facility",
+      "Key Report",
+      "Market",
+      "Metric",
+      "Org Group",
+      "Product",
+      "Product Group",
+      "Project",
+      "Regulation",
+      "Standard",
+      "System",
+      "Technology Environment",
+      "Vendor",
+      "Objective",
+      "Requirement",
+      "Threat",
+      "Contract",
+      "Policy",
   )
-  def test_create_objects(self, model_class):
+  def test_create_objects(self, obj_type):
     """Tests create objects without migration flag."""
-    data = {"title": "Object Title"}
-    response, obj = self.object_generator.generate_object(
-        model_class,
-        data=data
-    )
-    self.assertEqual(response.status_code, 201)
-    self.objs.append((model_class, obj.id))
-    res = model_class.query.get(obj.id)
+    model_class = "".join(obj_type.split())
+    factory = factories.get_model_factory(model_class)
+    instance = factory(title="Object Title")
+    res = instance.__class__.query.get(instance.id)
     self.assertEqual(res.migrate, False)
 
   @ddt.data(
-      all_models.AccessGroup,
-      all_models.AccountBalance,
-      all_models.DataAsset,
-      all_models.Facility,
-      all_models.KeyReport,
-      all_models.Market,
-      all_models.Metric,
-      all_models.OrgGroup,
-      all_models.Process,
-      all_models.Product,
-      all_models.ProductGroup,
-      all_models.Project,
-      all_models.Regulation,
-      all_models.Standard,
-      all_models.System,
-      all_models.TechnologyEnvironment,
-      all_models.Vendor,
-      all_models.Objective,
-      all_models.Requirement,
-      all_models.Threat,
-      all_models.Contract,
-      all_models.Policy
+      "Access Group",
+      "Account Balance",
+      "Data Asset",
+      "Facility",
+      "Key Report",
+      "Market",
+      "Metric",
+      "Org Group",
+      "Product",
+      "Product Group",
+      "Project",
+      "Regulation",
+      "Standard",
+      "System",
+      "Technology Environment",
+      "Vendor",
+      "Objective",
+      "Requirement",
+      "Threat",
+      "Contract",
+      "Policy",
   )
-  def test_create_objects_flag_false(self, model_class):
-    """Tests create objects with migrate flag is True."""
-    data = {"title": "Object Title",
-            "migrate": True}
-    response, obj = self.object_generator.generate_object(
-        model_class,
-        data=data
-    )
-    self.assertEqual(response.status_code, 201)
-    res = model_class.query.get(obj.id)
-    self.assertEqual(res.migrate, False)
-
-  def test_update_objects(self):
+  def test_update_objects(self, obj_type):
     """Tests update objects with migrate flag."""
-    for model_class, obj_id in self.objs:
-      obj = model_class.query.get(obj_id)
-      resp = self.api.put(obj, {"migrate": True})
-      self.assertEqual(resp.status_code, 200)
-      res = model_class.query.get(obj.id)
-      self.assertEqual(res.migrate, True)
+    model_class = "".join(obj_type.split())
+    factory = factories.get_model_factory(model_class)
+    instance = factory(title="Object Title")
+    resp = self.api.put(instance, {"migrate": True})
+    self.assertEqual(resp.status_code, 200)
+    res = instance.__class__.query.get(instance.id)
+    self.assertEqual(res.migrate, True)
+
+  @ddt.data(
+      "Access Group",
+      "Account Balance",
+      "Data Asset",
+      "Facility",
+      "Key Report",
+      "Market",
+      "Metric",
+      "Org Group",
+      "Product",
+      "Product Group",
+      "Project",
+      "Regulation",
+      "Standard",
+      "System",
+      "Technology Environment",
+      "Vendor",
+      "Objective",
+      "Requirement",
+      "Threat",
+      "Contract",
+      "Policy",
+  )
+  def test_import_objects(self, obj_type):
+    """Tests import objects with migrate flag."""
+    model_class = "".join(obj_type.split())
+    factory = factories.get_model_factory(model_class)
+    instance = factory(title="Object Title")
+    response = self.import_data(collections.OrderedDict([
+        ("object_type", model_class),
+        ("Code*", instance.slug),
+        ("migrate", True),
+    ]))
+    self._check_csv_response(response, {
+        obj_type: {
+            "row_warnings": {
+                errors.READONLY_WILL_BE_IGNORED.format(
+                    line=3,
+                    column_name="Migrate"
+                )
+            }
+        }
+    })

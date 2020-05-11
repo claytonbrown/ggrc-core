@@ -11,7 +11,7 @@ Create Date: 2020-05-07 17:05:29.223532
 
 import sqlalchemy as sa
 
-from alembic import op
+from alembic import op, context
 
 # revision identifiers, used by Alembic.
 
@@ -42,11 +42,12 @@ tables_list = [
 
 def upgrade():
   """Upgrade database schema and/or data, creating a new revision."""
-  for table in tables_list:
-    op.add_column(
-        table,
-        sa.Column("migrate", sa.Boolean, default=False, nullable=False),
-    )
+  with context.begin_transaction():
+    for table in tables_list:
+      op.add_column(
+          table,
+          sa.Column("migrate", sa.Boolean, default=False, nullable=False),
+      )
 
 
 def downgrade():
