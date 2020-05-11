@@ -648,7 +648,7 @@ class BusinessObject(Stateful, Noted, Described, Titled, Slugged):
 class WithMigrationFlag(object):
   """Mixin for models which support 'migrate' attribute"""
 
-  migrate = db.Column(db.Boolean, default=False)
+  migrate = db.Column(db.Boolean, nullable=False, default=False)
 
   _api_attrs = reflection.ApiAttributes(
       reflection.Attribute("migrate", create=False, update=True),
@@ -658,7 +658,6 @@ class WithMigrationFlag(object):
       "migrate": {
           "display_name": "Migrate",
           "mandatory": False,
-          "ignore_on_update": True,
           "view_only": True,
           "description": "Allowed values are:\nyes\nno"
       },

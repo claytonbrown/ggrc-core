@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Google Inc.
+# Copyright (C) 2020 Google Inc.
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 
 """
@@ -11,7 +11,7 @@ Create Date: 2020-05-07 17:05:29.223532
 
 import sqlalchemy as sa
 
-from alembic import op, context
+from alembic import op
 
 # revision identifiers, used by Alembic.
 
@@ -41,17 +41,14 @@ tables_list = [
 
 
 def upgrade():
-    """Upgrade database schema and/or data, creating a new revision."""
-    with context.begin_transaction():
-      for table in tables_list:
-        op.add_column(
-            table,
-            sa.Column("migrate", sa.Boolean, default=False, nullable=False),
-        )
+  """Upgrade database schema and/or data, creating a new revision."""
+  for table in tables_list:
+    op.add_column(
+        table,
+        sa.Column("migrate", sa.Boolean, default=False, nullable=False),
+    )
 
 
 def downgrade():
-    """Downgrade database schema and/or data back to the previous revision."""
-    with context.begin_transaction():
-      for table in tables_list:
-        op.drop_column(table, "migrate")
+  """Downgrade database schema and/or data back to the previous revision."""
+  raise NotImplementedError("Downgrade is not supported")
