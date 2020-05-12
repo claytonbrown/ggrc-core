@@ -19,6 +19,10 @@
       <input tabindex="1" class="input-block-level" placeholder="Enter Title" name="title" type="text" value="{{title}}" autofocus>
       {{#instance.computed_errors.title}}<label class="help-inline warning">{{this}}</label>{{/instance.computed_errors.title}}
     </div>
+
+    <migrate-checkbox
+      instance:from="instance"
+      isEditModal:from="'true'" />
   </div>
 
   <!-- Description & contact block  -->

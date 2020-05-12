@@ -36,6 +36,7 @@ import {formatDate} from '../../plugins/utils/date-utils';
 import {reify} from '../../plugins/utils/reify-utils';
 
 const EMPTY_DIFF_VALUE = '—';
+const MIGRATE_FLAG = 'migrate';
 
 let DATE_FIELDS = {
   created_at: 1,
@@ -230,6 +231,10 @@ export default canComponent.extend({
               origVal = loCompact(origVal);
               origVal = origVal.join(', ');
             }
+          }
+          if (fieldName === MIGRATE_FLAG) {
+            origVal = origVal ? '✓' : EMPTY_DIFF_VALUE;
+            value = value ? '✓' : EMPTY_DIFF_VALUE;
           }
           if (origVal || value) {
             origVal = unifyValue(origVal);

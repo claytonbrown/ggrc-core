@@ -1,0 +1,26 @@
+{{!
+  Copyright (C) 2020 Google Inc.
+  Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if isMigrateObject}}
+  <label class="migrate-label {{#if isEditModal}}migrate-label__edit-modal{{/if}}">
+    {{#if isEditModal}}
+      <input
+        type="checkbox"
+        class="migrate-checkbox"
+        el:checked:bind="instance.migrate">
+    {{else}}
+      <input
+        type="checkbox"
+        class="migrate-checkbox"
+        el:checked:bind="instance.migrate"
+        on:el:click="saveInstance(scope.event)"
+        {{#if disabled}}disabled{{/if}}>
+    {{/if}}
+    {{#if instance.migrate}}
+      <i class="fa fa-check"></i>
+    {{/if}}
+      Migrate
+  </label>
+{{/if}}
