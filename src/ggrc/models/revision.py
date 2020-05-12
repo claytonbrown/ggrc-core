@@ -642,6 +642,16 @@ class Revision(before_flush_handleable.BeforeFlushHandleable,
       automapping_json = flask.g.automappings_cache[automapping_id]
     return {"automapping": automapping_json}
 
+  def populate_migration_flag(self):
+    """Populates migration flag."""
+    from ggrc.models import get_model
+    model = get_model(self.resource_type)
+    from ggrc.models.mixins import WithMigrationFlag
+    if issubclass(model, WithMigrationFlag):
+      migrate = self._content.get("migrate", False)
+      return {"migrate": migrate}
+    return {}
+
   @builder.simple_property
   def content(self):
     """Property. Contains the revision content dict.
@@ -662,6 +672,7 @@ class Revision(before_flush_handleable.BeforeFlushHandleable,
     populated_content.update(self.populate_cavs())
     populated_content.update(self.populate_readonly())
     populated_content.update(self.populate_automappings())
+    populated_content.update(self.populate_migration_flag())
 
     populated_content["custom_attribute_definitions"] = sorted(
         populated_content["custom_attribute_definitions"],

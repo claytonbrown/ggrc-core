@@ -141,3 +141,20 @@ class StrictBooleanColumnHandler(CheckboxColumnHandler):
   TRUE_VALUES = {_true, }
   FALSE_VALUES = {_false, }
   NONE_VALUES = set()  # Radical, only true or false
+
+
+class ReadOnlyCheckboxColumnHandler(CheckboxColumnHandler):
+  """Handler for read-only columns"""
+
+  def _validate_item(self):
+    """Adds 'readonly will be ignored' warnings if new value unequal initial"""
+
+    if self.raw_value and self.raw_value != self.get_value():
+      self.add_warning(
+          errors.READONLY_WILL_BE_IGNORED,
+          column_name=self.display_name
+      )
+
+  def set_value(self):
+    """Set value for current column after validating."""
+    self._validate_item()

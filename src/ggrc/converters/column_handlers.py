@@ -92,6 +92,7 @@ _DEFAULT_COLUMN_HANDLERS_DICT = {
     "last_deprecated_date": handlers.DateColumnHandler,
     "link": handlers.TextColumnHandler,
     "means": handlers.OptionColumnHandler,
+    "migrate": boolean.ReadOnlyCheckboxColumnHandler,
     "modified_by": handlers.DirecPersonMappingColumnHandler,
     "created_by": handlers.ExportOnlyPersonColumnHandler,
     "name": handlers.TextColumnHandler,

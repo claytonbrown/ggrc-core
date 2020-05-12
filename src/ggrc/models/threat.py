@@ -25,6 +25,7 @@ class Threat(Roleable,
              mixins.base.ContextRBAC,
              mixins.BusinessObject,
              mixins.Folderable,
+             mixins.WithMigrationFlag,
              Indexed,
              db.Model):
   __tablename__ = 'threats'
