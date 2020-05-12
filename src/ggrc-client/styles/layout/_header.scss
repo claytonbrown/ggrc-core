@@ -4,13 +4,19 @@
  */
 
 .header-content {
-  height: 47px;
+  height: 94px;
   line-height: 47px;
   position: fixed;
   display: flex;
+  flex-direction: column;
   top: 0;
   width: 100%;
   border-bottom: 1px solid $headerBorder;
+
+  &__nav {
+    display: flex;
+    padding-left: 30px;
+  }
 
   @for $i from 1 through 5 {
     &.header-style-#{$i} {

@@ -13,6 +13,7 @@ import '../tooltip-content/tooltip-content';
 import '../feedback-link/feedback-link';
 import '../release-notes-menu-item/release-notes-menu-item';
 import './notifications-menu-item';
+import './migrate-banner';
 import logo from '../../../images/ggrc-logo.svg';
 import oneColorLogo from '../../../images/ggrc-one-color.svg';
 import {
