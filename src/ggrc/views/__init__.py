@@ -776,6 +776,10 @@ def get_all_attributes_json(load_custom_attributes=False):
     return services_common.as_json(published)
 
 
+def get_banner():
+  obj = models.Banner.query.first()
+  return services_common.as_json(obj.to_dict())
+
 @app.context_processor
 def base_context():
   """Gets the base context"""
@@ -792,6 +796,7 @@ def base_context():
       all_attributes_json=get_all_attributes_json,
       import_definitions=get_import_definitions,
       export_definitions=get_export_definitions,
+      alert_banner=get_banner,
   )
 
 
@@ -979,6 +984,25 @@ def admin_onetime_back_sync():
   db.session.commit()
   return bg_task.task_scheduled_response()
 
+
+@app.route("/admin/banner", methods=["POST"])
+@login.login_required
+@login.admin_required
+def admin_banner_setup():
+  """Change banner data """
+
+  banner = models.Banner.query.first()
+  params = json.loads(flask.request.data)
+
+  for key, val in params.items():
+    if key not in banner.DEFAULT_BANNER_DATA:
+      return flask.make_response(("No such attribute", 400))
+    setattr(banner, key, val)
+
+  db.session.add(banner)
+  db.session.commit()
+
+  return flask.make_response(("success", 200))
 
 @app.route("/admin")
 @login.login_required
